@@ -32,6 +32,10 @@ const corsOptions: CorsOptions = {
     // Allow server-to-server or curl (no origin)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Allow any Vercel deployment URL for this project
+    if (origin && origin.match(/^https:\/\/frontend-[a-z0-9]+-kaksaab2605-8884s-projects\.vercel\.app$/)) {
+      return callback(null, true);
+    }
     // Do not error; respond without CORS headers for disallowed origins
     return callback(null, false);
   },
