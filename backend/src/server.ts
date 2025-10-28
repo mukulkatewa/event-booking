@@ -36,12 +36,14 @@ const corsOptions: CorsOptions = {
     if (origin && origin.match(/^https:\/\/frontend-[a-z0-9]+-kaksaab2605-8884s-projects\.vercel\.app$/)) {
       return callback(null, true);
     }
+    // Log rejected origins for debugging
+    console.log('CORS rejected origin:', origin);
     // Do not error; respond without CORS headers for disallowed origins
     return callback(null, false);
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  // Let cors auto-reflect requested headers to avoid preflight mismatches
-  // allowedHeaders omitted intentionally
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
   optionsSuccessStatus: 204,
   maxAge: 86400,
 };
@@ -60,6 +62,15 @@ app.use("/api/upload", uploadRoutes); // ADD THIS
 // Health check
 app.get("/health", (req, res) => {
   res.json({ status: "OK" });
+});
+
+// API health check
+app.get("/api/health", (req, res) => {
+  res.json({ 
+    status: "OK",
+    message: "Backend API is running",
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.listen(PORT, () => {
