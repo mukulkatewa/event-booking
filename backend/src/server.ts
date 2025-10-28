@@ -29,23 +29,32 @@ const allowedOrigins = (
 
 const corsOptions: CorsOptions = {
   origin(origin, callback) {
+    console.log('CORS request from origin:', origin);
     // Allow server-to-server or curl (no origin)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin) {
+      console.log('No origin - allowing');
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(origin)) {
+      console.log('Origin in allowedOrigins - allowing');
+      return callback(null, true);
+    }
     // Allow any Vercel deployment URL for this project
-    if (origin && origin.match(/^https:\/\/frontend-[a-z0-9]+-kaksaab2605-8884s-projects\.vercel\.app$/)) {
+    if (origin.match(/^https:\/\/frontend-[a-z0-9]+-kaksaab2605-8884s-projects\.vercel\.app$/)) {
+      console.log('Origin matches Vercel pattern - allowing');
       return callback(null, true);
     }
     // Log rejected origins for debugging
     console.log('CORS rejected origin:', origin);
-    // Do not error; respond without CORS headers for disallowed origins
-    return callback(null, false);
+    // Return error for rejected origins
+    return callback(new Error('Not allowed by CORS'));
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  exposedHeaders: ["Authorization"],
   credentials: true,
-  optionsSuccessStatus: 204,
-  maxAge: 86400,
+  optionsSuccessStatus: 200,
+  preflightContinue: false,
 };
 
 app.use(cors(corsOptions));
@@ -69,7 +78,20 @@ app.get("/api/health", (req, res) => {
   res.json({ 
     status: "OK",
     message: "Backend API is running",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    env: {
+      hasDatabase: !!process.env.DATABASE_URL,
+      hasJWT: !!process.env.JWT_SECRET,
+      hasCloudinary: !!process.env.CLOUDINARY_CLOUD_NAME,
+    }
+  });
+});
+
+// Error handling middleware
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal server error'
   });
 });
 
