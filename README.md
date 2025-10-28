@@ -2,6 +2,11 @@
 
 A full-stack event booking platform with React frontend and Express backend.
 
+## 🌐 Live Application
+
+- **Frontend**: [https://frontend-topaz-tau-47.vercel.app](https://frontend-topaz-tau-47.vercel.app)
+- **Backend API**: [https://backend-two-phi-51.vercel.app](https://backend-two-phi-51.vercel.app)
+
 ## Project Structure
 
 ```
