@@ -18,6 +18,7 @@ const defaultOrigins = [
   "http://127.0.0.1:5173",
   "http://localhost:8080",
   "http://127.0.0.1:8080",
+  "https://frontend-9lyxwwmjv-kaksaab2605-8884s-projects.vercel.app",
 ];
 const allowedOrigins = (
   process.env.FRONTEND_ORIGIN
