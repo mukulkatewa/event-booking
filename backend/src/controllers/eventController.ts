@@ -102,6 +102,7 @@ export const createEvent = async (req: Request, res: Response) => {
 
     res.status(201).json({ event });
   } catch (error) {
+    console.error('Error creating event:', error);
     res.status(500).json({ error: 'Failed to create event' });
   }
 };
@@ -109,15 +110,51 @@ export const createEvent = async (req: Request, res: Response) => {
 export const updateEvent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const {
+      title,
+      description,
+      posterUrl,
+      venue,
+      date,
+      time,
+      totalSeats,
+      price,
+      category,
+    } = req.body;
+
+    // Build update data object, only including fields that are provided
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (posterUrl !== undefined) updateData.posterUrl = posterUrl;
+    if (venue !== undefined) updateData.venue = venue;
+    if (date !== undefined) updateData.date = new Date(date);
+    if (time !== undefined) updateData.time = time;
+    if (category !== undefined) updateData.category = category;
+    if (price !== undefined) updateData.price = parseFloat(price);
+    
+    // Handle totalSeats - also update availableSeats proportionally
+    if (totalSeats !== undefined) {
+      const currentEvent = await prisma.event.findUnique({ where: { id } });
+      if (currentEvent) {
+        const bookedSeats = currentEvent.totalSeats - currentEvent.availableSeats;
+        const newTotalSeats = parseInt(totalSeats);
+        updateData.totalSeats = newTotalSeats;
+        updateData.availableSeats = Math.max(0, newTotalSeats - bookedSeats);
+      }
+    }
 
     const event = await prisma.event.update({
       where: { id },
       data: updateData,
+      include: {
+        club: true,
+      },
     });
 
     res.json({ event });
   } catch (error) {
+    console.error('Error updating event:', error);
     res.status(500).json({ error: 'Failed to update event' });
   }
 };

@@ -60,3 +60,26 @@ export const getClubById = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch club' });
   }
 };
+
+export const getMyClub = async (req: Request, res: Response) => {
+  try {
+    const adminId = req.user?.userId;
+
+    const club = await prisma.club.findFirst({
+      where: { adminId },
+      include: {
+        events: {
+          orderBy: { date: 'desc' },
+        },
+      },
+    });
+
+    if (!club) {
+      return res.status(404).json({ error: 'No club found for this admin' });
+    }
+
+    res.json({ club });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch club' });
+  }
+};
